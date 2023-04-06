@@ -1,0 +1,2 @@
+config_dir: /root/nginx
+nginx_version: stable-alpine3.17

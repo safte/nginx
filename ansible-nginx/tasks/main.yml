@@ -1,0 +1,44 @@
+- name: Run nginx
+  block:
+    - name: Create /root/nginx directory
+      file:
+        path: "{{ config_dir }}"
+        state: directory
+        owner: root 
+        group: root
+
+    - name: Copy nginx config to host
+      template:
+        src: custom.conf.j2
+        dest: "{{ config_dir }}/custom.conf"
+        owner: root 
+        group: root
+        mode: 0644
+
+    - name: Create /var/www/html directory
+      file:
+        path: "{{ html_dir }}"
+        state: directory
+        owner: root 
+        group: root
+
+    - name: Copy index.html to host
+      template:
+        src: index.html.j2
+        dest: "{{ html_dir }}/index.html"
+        owner: root 
+        group: root
+        mode: 0644
+
+    - name: Copy docker-compose.yml to host
+      copy:
+        src: "{{ playbook_dir }}/ansible-nginx/files/docker-compose.yml"
+        dest: "{{ home_dir }}/docker-compose.yml"
+        owner: root 
+        group: root
+        mode: 0644
+
+    - name: Create and start nginx container
+      community.docker.docker_compose:
+        project_src: "{{ home_dir }}"
+        recreate: always

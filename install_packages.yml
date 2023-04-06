@@ -1,0 +1,42 @@
+---
+- hosts: nginx
+  tags: packages
+  tasks:
+  - name: add docker gpg key
+    apt_key:
+      url: "{{ docker_apt_key }}"
+      state: present
+
+  - name: add docker repo
+    apt_repository:
+      repo: "{{ docker_apt_repo }}"
+      state: present
+
+  - name: install docker-ce
+    apt:
+      name: docker-ce
+      state: latest
+      update_cache: true
+
+  - name: install docker module for python
+    pip:
+      name: "{{ item }}"
+    loop:
+      - docker
+      - docker-compose
+
+  - name: ensure docker started
+    systemd:
+      name: docker
+      state: started
+      enabled: yes
+
+  - name: install docker-compose from official github repo
+    get_url:
+      url : "{{ docker_compose_url }}"
+      dest: "{{ docker_compose_dest }}"
+      mode: 'a+x'
+
+  - name: symlink
+    shell:
+      cmd: ln -fs /usr/local/bin/docker-compose /usr/bin/docker-compose
