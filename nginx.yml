@@ -1,0 +1,8 @@
+- import_playbook: install_packages.yml
+- import_playbook: firewall.yml
+
+- hosts: nginx
+  gather_facts: no
+  become: yes
+  roles:
+    - ansible-nginx

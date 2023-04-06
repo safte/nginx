@@ -1,0 +1,16 @@
+all:
+  vars:
+#     config_dir: "/root/nginx"
+    html_dir: "/var/www/html"
+    home_dir: "/root"
+    docker_apt_key: "https://download.docker.com/linux/ubuntu/gpg"
+    docker_apt_repo: "deb https://download.docker.com/linux/ubuntu focal stable"
+    docker_compose_version: "v2.17.2"
+    docker_compose_url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-linux-x86_64"
+    docker_compose_dest: "/usr/local/bin/docker-compose"
+  children:
+    nginx:
+      hosts:
+        46.148.239.122:
+      vars: 
+        server_name: "46.148.239.122"

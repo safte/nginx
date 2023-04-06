@@ -1,0 +1,82 @@
+---
+- hosts: nginx
+  tags: firewall
+  tasks:
+  - name: install firewalld
+    apt:
+      name: firewalld
+      state: present
+
+  - name: ensure firewalld started
+    systemd:
+      name: firewalld
+      state: started
+      enabled: yes
+
+  - name: enable ports on public zone
+    ansible.posix.firewalld:
+      state: enabled
+      port: "{{ item }}"
+      permanent: yes
+      zone: public
+    loop:
+      - 8080/udp
+      - 8080/tcp
+    notify:
+    - firewalld_reload
+    - docker_restart
+
+  - name: add interface to public zone
+    ansible.posix.firewalld:
+      state: enabled
+      interface: "{{ item }}"
+      permanent: yes
+      zone: public
+    loop:
+      - eth0
+    notify:
+    - firewalld_reload
+
+  - name: add ips to trusted zone
+    ansible.posix.firewalld:
+      state: enabled
+      source: "{{ item }}"
+      permanent: yes
+      zone: trusted
+    loop:
+      - 85.143.203.217/32
+      - 176.53.207.234/32
+      - 185.91.55.90/32
+    notify:
+    - firewalld_reload
+
+  - name: enable ports on trusted zone
+    ansible.posix.firewalld:
+      state: enabled
+      service: "{{ item }}"
+      permanent: yes
+      zone: trusted
+    loop:
+      - ssh
+    notify:
+    - firewalld_reload
+
+  - name: disable ports in public zone
+    ansible.posix.firewalld:
+      zone: public
+      service: "{{ item }}"
+      permanent: true
+      state: disabled
+    loop:
+      - ssh
+    notify:
+      - firewalld_reload
+
+  handlers:
+    - name: firewalld_reload
+      command: firewall-cmd --reload
+
+    - name: docker_restart
+      systemd:
+        name: docker
+        state: restarted
